@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net5.0-windows</TargetFramework>
+    <RootNamespace>JJ_s_USF4_Import_Export</RootNamespace>
+    <UseWindowsForms>true</UseWindowsForms>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\IONET\IONET\IONET.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="JJsUSF4Library">
+      <HintPath>..\..\JJsUSF4LibraryProject\JJsUSF4Library\bin\Release\net5.0\JJsUSF4Library.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+</Project>
