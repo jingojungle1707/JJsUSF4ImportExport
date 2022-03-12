@@ -10,7 +10,10 @@ using JJsUSF4Library.FileClasses.SubfileClasses;
 
 namespace JJsUSF4ImportExport
 {
-    public static class USF4FileTreeExtension
+    /// <summary>
+    /// Class to generate TreeView nodes for each filetype from JJsUSF4Library
+    /// </summary>
+    public static class USF4FileTreeViewExtension
     {
         public static TreeNode GenerateTreeNode(this USF4File uf)
         {
@@ -27,7 +30,7 @@ namespace JJsUSF4ImportExport
             };
         }
 
-        public static TreeNode GenerateTreeNode(this BSR f)
+        private static TreeNode GenerateTreeNode(this BSR f)
         {
             TreeNode n = new TreeNode()
             {
@@ -65,7 +68,7 @@ namespace JJsUSF4ImportExport
             return n;
         }
 
-        public static TreeNode GenerateTreeNode(this EMA f)
+        private static TreeNode GenerateTreeNode(this EMA f)
         {
             TreeNode n = new TreeNode()
             {
@@ -119,7 +122,7 @@ namespace JJsUSF4ImportExport
             return n;
         }
 
-        public static TreeNode GenerateTreeNode(this EMB f)
+        private static TreeNode GenerateTreeNode(this EMB f)
         {
             TreeNode n = new TreeNode()
             {
@@ -150,7 +153,7 @@ namespace JJsUSF4ImportExport
             return n;
         }
 
-        public static TreeNode GenerateTreeNode(this EMO f)
+        private static TreeNode GenerateTreeNode(this EMO f)
         {
             TreeNode n = new TreeNode()
             {

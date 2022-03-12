@@ -6,6 +6,8 @@ using System.Drawing;
 using IONET.Core;
 using JJsUSF4Library.FileClasses;
 using JJsUSF4Library.FileClasses.SubfileClasses;
+using System.IO;
+using JJsUSF4Library;
 
 namespace JJsUSF4ImportExport
 {
@@ -18,6 +20,8 @@ namespace JJsUSF4ImportExport
 
             //Generate vertex tangents if they're missing
             if (!ioMesh.HasTangents) ioMesh.GenerateTangentsAndBitangents();
+            ioMesh.HasBitangents = true;
+            ioMesh.HasTangents = true;
 
             foreach (IONET.Core.Model.IOVertex ioV in ioMesh.Vertices)
             {
@@ -29,7 +33,7 @@ namespace JJsUSF4ImportExport
                     UV = ioV.UVs[0],
                     BoneIDWeightPairs = new List<Vertex.BoneIDWeightPair>(),
                     //Dummy color data for now
-                    Color = Color.FromArgb(0xFF, 0xFF, 0xFF, 0xFF),
+                    Color = Color.FromArgb(0xFF, 0xFE, 0xFF, 0xFF),
                 });
 
                 foreach (IOBoneWeight ioB in ioV.Envelope.Weights)
@@ -44,24 +48,32 @@ namespace JJsUSF4ImportExport
             return usf4Vertices;
         }
 
-        public static void AppendIOMeshToEMO(IONET.Core.Model.IOMesh ioMesh, EMO emo)
+        public static EMG GenerateEMGfromIOMesh(IONET.Core.Model.IOMesh ioMesh, EMO emo, int textureIndex = -1, int normalMapIndex = -1)
         {
             //Make sure everything is triangles
             ioMesh.MakeTriangles();
 
-            //Fetch some existing instances from the original EMO to copy "default" values from
-            EMG template_emg = emo.EMGs[0];
+            //Copy the emo
+            EMO copy_emo = new EMO();
+            using (MemoryStream ms = new MemoryStream(emo.GenerateBytes()))
+            {
+                using (BinaryReader br = new BinaryReader(ms))
+                {
+                    copy_emo.ReadFromStream(br);
+                }
+            }
+            EMG template_emg = copy_emo.EMGs[0];
             Model template_model = template_emg.Models[0];
             SubModel template_subModel = template_model.SubModels[0];
 
             EMG emg = new EMG()
             {
-                Name = ioMesh.Name,
+                Name = "test",
 
                 //TODO DONT THINK THIS ROOTBONE THING IS RIGHT
 
-                RootBoneName = ioMesh.ParentBone.Name,
-                RootBoneID = emo.Skeleton.NodeNames.IndexOf(ioMesh.ParentBone.Name),
+                RootBoneName = emo.Skeleton.Nodes.Last().Name,
+                RootBoneID = emo.Skeleton.Nodes.Count - 1,
                 Models = new List<Model>(),
             };
 
@@ -79,7 +91,7 @@ namespace JJsUSF4ImportExport
             foreach (IONET.Core.Model.IOPolygon ioP in ioMesh.Polygons)
             {
                 //Make a texture
-                model.Textures.Add(template_model.Textures[0]);
+                model.Textures.Add(new EMGModelTexture(textureIndex, normalMapIndex));
 
                 //Convert triangle list to daisychain-able indices list
                 List<int[]> indices = new List<int[]>();
@@ -102,7 +114,12 @@ namespace JJsUSF4ImportExport
 
             emg.Models.Add(model);
 
-            emo.EMGs.Add(emg);
+            return emg;
+        }
+
+        public static void AppendIOMeshToEMO(IONET.Core.Model.IOMesh ioMesh, EMO emo, int textureIndex = -1, int normalMapIndex = -1)
+        {
+            emo.EMGs.Add(GenerateEMGfromIOMesh(ioMesh, emo, textureIndex, normalMapIndex));
         }
 
         public static EMO CreateEMO(IONET.Core.IOScene ioScene)
@@ -117,10 +134,8 @@ namespace JJsUSF4ImportExport
             {
                 FFList = new List<byte[]>(),
                 Nodes = new List<Node>(),
-                NodeNames = new List<string>(),
                 IKDataBlocks = new List<IKDataBlock>(),
                 IKNodes = new List<IKNode>(),
-                IKNodeNames = new List<string>(),
             };
 
             IONET.Core.Skeleton.IOSkeleton ioSkel = ioScene.Models[0].Skeleton;

@@ -103,7 +103,7 @@ namespace JJsUSF4ImportExport
 
                 for (int k = 0; k < emg.Models[j].SubModels.Count; k++)
                 {                    
-                    List<int[]> indices = FaceIndicesFromDaisyChain(emg.Models[j].SubModels[k].DaisyChain);
+                    List<int[]> indices = FaceIndicesFromDaisyChain(emg.Models[j].SubModels[k].DaisyChain, emg.Models[j].ReadMode != 1);
 
                     foreach (int[] face in indices)
                     {
@@ -113,7 +113,7 @@ namespace JJsUSF4ImportExport
                         ioModel.Meshes.Last().Polygons.Add(new IONET.Core.Model.IOPolygon()
                         {
                             Indicies = face_list,
-                            MaterialName = emg.Models[j].SubModels[k].Name
+                            MaterialName = $"{emg.Models[j].SubModels[k].Name}_{k:D2}"
                         });
                     }
                 }
