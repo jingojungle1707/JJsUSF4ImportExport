@@ -53,7 +53,16 @@ namespace JJsUSF4ImportExport
             //Make sure everything is triangles
             ioMesh.MakeTriangles();
 
-            //Copy the emo
+            //Compare our ioMesh bones to the emo skeleton
+            foreach (IONET.Core.Model.IOVertex ioV in ioMesh.Vertices)
+            {
+                foreach (string boneName in ioV.Envelope.Weights.Select(o => o.BoneName))
+                {
+                    if (!emo.Skeleton.NodeNames.Contains(boneName)) throw new Exception(StringLibrary.STR_ERR_BoneMismatch + $"#{boneName}");
+                }
+            }
+
+            //Copy the emo to make sure we don't accidentally mess with the original
             EMO copy_emo = new EMO();
             using (MemoryStream ms = new MemoryStream(emo.GenerateBytes()))
             {
@@ -68,7 +77,7 @@ namespace JJsUSF4ImportExport
 
             EMG emg = new EMG()
             {
-                Name = "test",
+                Name = ioMesh.Name,
 
                 //TODO DONT THINK THIS ROOTBONE THING IS RIGHT
 
@@ -122,7 +131,7 @@ namespace JJsUSF4ImportExport
             emo.EMGs.Add(GenerateEMGfromIOMesh(ioMesh, emo, textureIndex, normalMapIndex));
         }
 
-        public static EMO CreateEMO(IONET.Core.IOScene ioScene)
+        public static EMO CreateEMO(IOScene ioScene)
         {
             EMO emo = new EMO() 
             {

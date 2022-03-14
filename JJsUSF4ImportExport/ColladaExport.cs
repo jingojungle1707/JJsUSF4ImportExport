@@ -54,6 +54,15 @@ namespace JJsUSF4ImportExport
             {
                 foreach (Model m in emg.Models)
                 {
+                    for (int i = 0; i < m.SubModels.Count; i++)
+                    {
+                        SubModel sm = m.SubModels[i];
+                        string materialName = $"{sm.Name}_{i:D2}";
+                        if (!materials.TryGetValue(materialName, out _))
+                        {
+                            materials.Add(materialName, m.Textures[sm.EMGTextureIndex].Layers[0].TextureIndex);
+                        }
+                    }
                     foreach (SubModel sm in m.SubModels)
                     {
                         if (!materials.TryGetValue(sm.Name, out _))
@@ -74,7 +83,7 @@ namespace JJsUSF4ImportExport
                     DiffuseMap = new IONET.Core.Model.IOTexture()
                     {
                         FilePath = texturePack.Files[materials[str]].Name + ".dds",
-                        Name = "",
+                        Name = texturePack.Files[materials[str]].Name,
                         UVChannel = 0
                     },
                     Name = str,

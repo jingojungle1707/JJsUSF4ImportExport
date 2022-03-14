@@ -46,21 +46,26 @@ namespace JJsUSF4ImportExport
             this.cbExportTextures = new System.Windows.Forms.CheckBox();
             this.gbExportSettings = new System.Windows.Forms.GroupBox();
             this.gbImportSettings = new System.Windows.Forms.GroupBox();
+            this.cbSFxT = new System.Windows.Forms.CheckBox();
+            this.cbTextureIndex = new System.Windows.Forms.ComboBox();
+            this.lbUseTextureIndex = new System.Windows.Forms.Label();
             this.rblTargetEMG = new JJsUSF4ImportExport.RadioButtonList();
             this.lbTargetEMG = new System.Windows.Forms.Label();
             this.btnImportIOMesh = new System.Windows.Forms.Button();
             this.tvColladaFiles = new System.Windows.Forms.TreeView();
             this.btnLoadColladaFiles = new System.Windows.Forms.Button();
-            this.ssStatusStrip = new System.Windows.Forms.StatusStrip();
+            this.ssGeneralStatus = new System.Windows.Forms.StatusStrip();
             this.lblStatusBarFeedback = new System.Windows.Forms.ToolStripStatusLabel();
+            this.toolStripStatusLabel1 = new System.Windows.Forms.ToolStripStatusLabel();
             this.btnClearInputFiles = new System.Windows.Forms.Button();
             this.btnClearColladaFiles = new System.Windows.Forms.Button();
-            this.lbUseTextureIndex = new System.Windows.Forms.Label();
-            this.cbTextureIndex = new System.Windows.Forms.ComboBox();
+            this.pnlUserControls = new System.Windows.Forms.Panel();
+            this.progressBarCollada = new System.Windows.Forms.ProgressBar();
             this.gbWorkingDirectories.SuspendLayout();
             this.gbExportSettings.SuspendLayout();
             this.gbImportSettings.SuspendLayout();
-            this.ssStatusStrip.SuspendLayout();
+            this.ssGeneralStatus.SuspendLayout();
+            this.pnlUserControls.SuspendLayout();
             this.SuspendLayout();
             // 
             // tvUSF4Files
@@ -70,9 +75,10 @@ namespace JJsUSF4ImportExport
             this.tvUSF4Files.Location = new System.Drawing.Point(3, 160);
             this.tvUSF4Files.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this.tvUSF4Files.Name = "tvUSF4Files";
-            this.tvUSF4Files.Size = new System.Drawing.Size(311, 485);
+            this.tvUSF4Files.Size = new System.Drawing.Size(311, 487);
             this.tvUSF4Files.TabIndex = 0;
             this.tvUSF4Files.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.treeView_AfterSelect);
+            this.tvUSF4Files.NodeMouseClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.tvTree_NodeMouseClick);
             // 
             // btnLoadInputFiles
             // 
@@ -88,7 +94,7 @@ namespace JJsUSF4ImportExport
             // btnOutputDirectory
             // 
             this.btnOutputDirectory.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnOutputDirectory.Location = new System.Drawing.Point(1000, 53);
+            this.btnOutputDirectory.Location = new System.Drawing.Point(1001, 53);
             this.btnOutputDirectory.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this.btnOutputDirectory.Name = "btnOutputDirectory";
             this.btnOutputDirectory.Size = new System.Drawing.Size(146, 23);
@@ -100,7 +106,7 @@ namespace JJsUSF4ImportExport
             // btnInputDirectory
             // 
             this.btnInputDirectory.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnInputDirectory.Location = new System.Drawing.Point(1000, 23);
+            this.btnInputDirectory.Location = new System.Drawing.Point(1001, 23);
             this.btnInputDirectory.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this.btnInputDirectory.Name = "btnInputDirectory";
             this.btnInputDirectory.Size = new System.Drawing.Size(146, 23);
@@ -116,7 +122,7 @@ namespace JJsUSF4ImportExport
             this.tbOutputDirectory.Location = new System.Drawing.Point(9, 53);
             this.tbOutputDirectory.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this.tbOutputDirectory.Name = "tbOutputDirectory";
-            this.tbOutputDirectory.Size = new System.Drawing.Size(985, 23);
+            this.tbOutputDirectory.Size = new System.Drawing.Size(986, 23);
             this.tbOutputDirectory.TabIndex = 1;
             // 
             // tbInputDirectory
@@ -126,7 +132,7 @@ namespace JJsUSF4ImportExport
             this.tbInputDirectory.Location = new System.Drawing.Point(9, 23);
             this.tbInputDirectory.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this.tbInputDirectory.Name = "tbInputDirectory";
-            this.tbInputDirectory.Size = new System.Drawing.Size(985, 23);
+            this.tbInputDirectory.Size = new System.Drawing.Size(986, 23);
             this.tbInputDirectory.TabIndex = 0;
             // 
             // gbWorkingDirectories
@@ -140,11 +146,11 @@ namespace JJsUSF4ImportExport
             this.gbWorkingDirectories.Controls.Add(this.btnInputDirectory);
             this.gbWorkingDirectories.Controls.Add(this.tbOutputDirectory);
             this.gbWorkingDirectories.Controls.Add(this.tbInputDirectory);
-            this.gbWorkingDirectories.Location = new System.Drawing.Point(3, 2);
+            this.gbWorkingDirectories.Location = new System.Drawing.Point(6, 3);
             this.gbWorkingDirectories.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this.gbWorkingDirectories.Name = "gbWorkingDirectories";
             this.gbWorkingDirectories.Padding = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.gbWorkingDirectories.Size = new System.Drawing.Size(1153, 116);
+            this.gbWorkingDirectories.Size = new System.Drawing.Size(1154, 116);
             this.gbWorkingDirectories.TabIndex = 1;
             this.gbWorkingDirectories.TabStop = false;
             this.gbWorkingDirectories.Text = "Working Directories";
@@ -152,7 +158,7 @@ namespace JJsUSF4ImportExport
             // btnColladaDirectory
             // 
             this.btnColladaDirectory.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnColladaDirectory.Location = new System.Drawing.Point(999, 85);
+            this.btnColladaDirectory.Location = new System.Drawing.Point(1000, 85);
             this.btnColladaDirectory.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this.btnColladaDirectory.Name = "btnColladaDirectory";
             this.btnColladaDirectory.Size = new System.Drawing.Size(146, 23);
@@ -168,7 +174,7 @@ namespace JJsUSF4ImportExport
             this.lbDirectoryDivider.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
             this.lbDirectoryDivider.Location = new System.Drawing.Point(-1, 80);
             this.lbDirectoryDivider.Name = "lbDirectoryDivider";
-            this.lbDirectoryDivider.Size = new System.Drawing.Size(1155, 2);
+            this.lbDirectoryDivider.Size = new System.Drawing.Size(1156, 2);
             this.lbDirectoryDivider.TabIndex = 7;
             // 
             // tbColladaDirectory
@@ -178,7 +184,7 @@ namespace JJsUSF4ImportExport
             this.tbColladaDirectory.Location = new System.Drawing.Point(8, 85);
             this.tbColladaDirectory.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this.tbColladaDirectory.Name = "tbColladaDirectory";
-            this.tbColladaDirectory.Size = new System.Drawing.Size(985, 23);
+            this.tbColladaDirectory.Size = new System.Drawing.Size(986, 23);
             this.tbColladaDirectory.TabIndex = 6;
             // 
             // lbFeedback
@@ -245,7 +251,7 @@ namespace JJsUSF4ImportExport
             this.gbExportSettings.Controls.Add(this.clbEMGList);
             this.gbExportSettings.Location = new System.Drawing.Point(321, 119);
             this.gbExportSettings.Name = "gbExportSettings";
-            this.gbExportSettings.Size = new System.Drawing.Size(254, 554);
+            this.gbExportSettings.Size = new System.Drawing.Size(254, 531);
             this.gbExportSettings.TabIndex = 7;
             this.gbExportSettings.TabStop = false;
             this.gbExportSettings.Text = "Export Settings";
@@ -254,6 +260,7 @@ namespace JJsUSF4ImportExport
             // 
             this.gbImportSettings.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left)));
+            this.gbImportSettings.Controls.Add(this.cbSFxT);
             this.gbImportSettings.Controls.Add(this.cbTextureIndex);
             this.gbImportSettings.Controls.Add(this.lbUseTextureIndex);
             this.gbImportSettings.Controls.Add(this.rblTargetEMG);
@@ -261,10 +268,39 @@ namespace JJsUSF4ImportExport
             this.gbImportSettings.Controls.Add(this.btnImportIOMesh);
             this.gbImportSettings.Location = new System.Drawing.Point(581, 119);
             this.gbImportSettings.Name = "gbImportSettings";
-            this.gbImportSettings.Size = new System.Drawing.Size(261, 554);
+            this.gbImportSettings.Size = new System.Drawing.Size(261, 531);
             this.gbImportSettings.TabIndex = 8;
             this.gbImportSettings.TabStop = false;
             this.gbImportSettings.Text = "Import Settings";
+            // 
+            // cbSFxT
+            // 
+            this.cbSFxT.AutoSize = true;
+            this.cbSFxT.Location = new System.Drawing.Point(6, 76);
+            this.cbSFxT.Name = "cbSFxT";
+            this.cbSFxT.Size = new System.Drawing.Size(55, 19);
+            this.cbSFxT.TabIndex = 7;
+            this.cbSFxT.Text = "SFxT?";
+            this.cbSFxT.UseVisualStyleBackColor = true;
+            this.cbSFxT.Visible = false;
+            // 
+            // cbTextureIndex
+            // 
+            this.cbTextureIndex.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cbTextureIndex.FormattingEnabled = true;
+            this.cbTextureIndex.Location = new System.Drawing.Point(198, 77);
+            this.cbTextureIndex.Name = "cbTextureIndex";
+            this.cbTextureIndex.Size = new System.Drawing.Size(58, 23);
+            this.cbTextureIndex.TabIndex = 8;
+            // 
+            // lbUseTextureIndex
+            // 
+            this.lbUseTextureIndex.AutoSize = true;
+            this.lbUseTextureIndex.Location = new System.Drawing.Point(113, 80);
+            this.lbUseTextureIndex.Name = "lbUseTextureIndex";
+            this.lbUseTextureIndex.Size = new System.Drawing.Size(79, 15);
+            this.lbUseTextureIndex.TabIndex = 7;
+            this.lbUseTextureIndex.Text = "Use texture #:";
             // 
             // rblTargetEMG
             // 
@@ -301,12 +337,15 @@ namespace JJsUSF4ImportExport
             | System.Windows.Forms.AnchorStyles.Left)));
             this.tvColladaFiles.Location = new System.Drawing.Point(848, 160);
             this.tvColladaFiles.Name = "tvColladaFiles";
-            this.tvColladaFiles.Size = new System.Drawing.Size(308, 485);
+            this.tvColladaFiles.Size = new System.Drawing.Size(308, 487);
             this.tvColladaFiles.TabIndex = 9;
+            this.tvColladaFiles.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.treeView_AfterSelect);
+            this.tvColladaFiles.NodeMouseClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.tvTree_NodeMouseClick);
+            this.tvColladaFiles.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.tvColladaFiles_KeyPress);
             // 
             // btnLoadColladaFiles
             // 
-            this.btnLoadColladaFiles.Location = new System.Drawing.Point(849, 127);
+            this.btnLoadColladaFiles.Location = new System.Drawing.Point(848, 127);
             this.btnLoadColladaFiles.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this.btnLoadColladaFiles.Name = "btnLoadColladaFiles";
             this.btnLoadColladaFiles.Size = new System.Drawing.Size(147, 27);
@@ -315,20 +354,26 @@ namespace JJsUSF4ImportExport
             this.btnLoadColladaFiles.UseVisualStyleBackColor = true;
             this.btnLoadColladaFiles.Click += new System.EventHandler(this.btnLoadColladaFiles_Click);
             // 
-            // ssStatusStrip
+            // ssGeneralStatus
             // 
-            this.ssStatusStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.lblStatusBarFeedback});
-            this.ssStatusStrip.Location = new System.Drawing.Point(0, 653);
-            this.ssStatusStrip.Name = "ssStatusStrip";
-            this.ssStatusStrip.Size = new System.Drawing.Size(1159, 22);
-            this.ssStatusStrip.TabIndex = 11;
-            this.ssStatusStrip.Text = "statusStrip1";
+            this.ssGeneralStatus.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.lblStatusBarFeedback,
+            this.toolStripStatusLabel1});
+            this.ssGeneralStatus.Location = new System.Drawing.Point(0, 653);
+            this.ssGeneralStatus.Name = "ssGeneralStatus";
+            this.ssGeneralStatus.Size = new System.Drawing.Size(1159, 22);
+            this.ssGeneralStatus.TabIndex = 11;
+            this.ssGeneralStatus.Text = "statusStrip1";
             // 
             // lblStatusBarFeedback
             // 
             this.lblStatusBarFeedback.Name = "lblStatusBarFeedback";
             this.lblStatusBarFeedback.Size = new System.Drawing.Size(0, 17);
+            // 
+            // toolStripStatusLabel1
+            // 
+            this.toolStripStatusLabel1.Name = "toolStripStatusLabel1";
+            this.toolStripStatusLabel1.Size = new System.Drawing.Size(0, 17);
             // 
             // btnClearInputFiles
             // 
@@ -352,42 +397,45 @@ namespace JJsUSF4ImportExport
             this.btnClearColladaFiles.UseVisualStyleBackColor = true;
             this.btnClearColladaFiles.Click += new System.EventHandler(this.btnClearColladaFiles_Click);
             // 
-            // lbUseTextureIndex
+            // pnlUserControls
             // 
-            this.lbUseTextureIndex.AutoSize = true;
-            this.lbUseTextureIndex.Location = new System.Drawing.Point(113, 80);
-            this.lbUseTextureIndex.Name = "lbUseTextureIndex";
-            this.lbUseTextureIndex.Size = new System.Drawing.Size(79, 15);
-            this.lbUseTextureIndex.TabIndex = 7;
-            this.lbUseTextureIndex.Text = "Use texture #:";
+            this.pnlUserControls.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.pnlUserControls.Controls.Add(this.progressBarCollada);
+            this.pnlUserControls.Controls.Add(this.btnClearColladaFiles);
+            this.pnlUserControls.Controls.Add(this.btnClearInputFiles);
+            this.pnlUserControls.Controls.Add(this.btnLoadColladaFiles);
+            this.pnlUserControls.Controls.Add(this.tvColladaFiles);
+            this.pnlUserControls.Controls.Add(this.gbImportSettings);
+            this.pnlUserControls.Controls.Add(this.lbFeedback);
+            this.pnlUserControls.Controls.Add(this.gbExportSettings);
+            this.pnlUserControls.Controls.Add(this.btnLoadInputFiles);
+            this.pnlUserControls.Controls.Add(this.tvUSF4Files);
+            this.pnlUserControls.Controls.Add(this.gbWorkingDirectories);
+            this.pnlUserControls.Location = new System.Drawing.Point(0, 0);
+            this.pnlUserControls.Name = "pnlUserControls";
+            this.pnlUserControls.Size = new System.Drawing.Size(1160, 650);
+            this.pnlUserControls.TabIndex = 14;
             // 
-            // cbTextureIndex
+            // progressBarCollada
             // 
-            this.cbTextureIndex.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.cbTextureIndex.FormattingEnabled = true;
-            this.cbTextureIndex.Location = new System.Drawing.Point(198, 77);
-            this.cbTextureIndex.Name = "cbTextureIndex";
-            this.cbTextureIndex.Size = new System.Drawing.Size(58, 23);
-            this.cbTextureIndex.TabIndex = 8;
+            this.progressBarCollada.Location = new System.Drawing.Point(848, 627);
+            this.progressBarCollada.Name = "progressBarCollada";
+            this.progressBarCollada.Size = new System.Drawing.Size(307, 19);
+            this.progressBarCollada.TabIndex = 14;
+            this.progressBarCollada.Visible = false;
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1159, 675);
-            this.Controls.Add(this.btnClearColladaFiles);
-            this.Controls.Add(this.btnClearInputFiles);
-            this.Controls.Add(this.ssStatusStrip);
-            this.Controls.Add(this.btnLoadColladaFiles);
-            this.Controls.Add(this.tvColladaFiles);
-            this.Controls.Add(this.gbImportSettings);
-            this.Controls.Add(this.lbFeedback);
-            this.Controls.Add(this.gbExportSettings);
-            this.Controls.Add(this.gbWorkingDirectories);
-            this.Controls.Add(this.btnLoadInputFiles);
-            this.Controls.Add(this.tvUSF4Files);
+            this.Controls.Add(this.ssGeneralStatus);
+            this.Controls.Add(this.pnlUserControls);
             this.Name = "Form1";
             this.Text = "JJ\'s USF4 Import Export";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form1_FormClosing);
             this.Load += new System.EventHandler(this.Form1_Load);
             this.gbWorkingDirectories.ResumeLayout(false);
             this.gbWorkingDirectories.PerformLayout();
@@ -395,8 +443,10 @@ namespace JJsUSF4ImportExport
             this.gbExportSettings.PerformLayout();
             this.gbImportSettings.ResumeLayout(false);
             this.gbImportSettings.PerformLayout();
-            this.ssStatusStrip.ResumeLayout(false);
-            this.ssStatusStrip.PerformLayout();
+            this.ssGeneralStatus.ResumeLayout(false);
+            this.ssGeneralStatus.PerformLayout();
+            this.pnlUserControls.ResumeLayout(false);
+            this.pnlUserControls.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -426,12 +476,16 @@ namespace JJsUSF4ImportExport
         private System.Windows.Forms.TextBox tbColladaDirectory;
         private System.Windows.Forms.Button btnColladaDirectory;
         private System.Windows.Forms.Button btnLoadColladaFiles;
-        private System.Windows.Forms.StatusStrip ssStatusStrip;
+        private System.Windows.Forms.StatusStrip ssGeneralStatus;
         private System.Windows.Forms.ToolStripStatusLabel lblStatusBarFeedback;
         private System.Windows.Forms.Button btnClearInputFiles;
         private System.Windows.Forms.Button btnClearColladaFiles;
         private System.Windows.Forms.ComboBox cbTextureIndex;
         private System.Windows.Forms.Label lbUseTextureIndex;
+        private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel1;
+        private System.Windows.Forms.Panel pnlUserControls;
+        private System.Windows.Forms.ProgressBar progressBarCollada;
+        private System.Windows.Forms.CheckBox cbSFxT;
     }
 }
 

@@ -51,10 +51,13 @@ namespace JJsUSF4ImportExport
                 Tag = iOMesh
             };
 
-            List<string> materials = iOMesh.Polygons.Select(o => o.MaterialName).Distinct().ToList();
-            foreach (string material in materials)
+            foreach (IONET.Core.Model.IOPolygon ioP in iOMesh.Polygons)
             {
-                n.Nodes.Add(new TreeNode(material));
+                n.Nodes.Add(new TreeNode()
+                {
+                    Text = ioP.MaterialName,
+                    Tag = ioP
+                });
             }
 
             return n;

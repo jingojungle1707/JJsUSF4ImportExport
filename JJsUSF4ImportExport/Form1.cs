@@ -17,7 +17,6 @@ using JJsUSF4Library.FileClasses.SubfileClasses;
 
 namespace JJsUSF4ImportExport
 {
-
     public partial class Form1 : Form
     {
         TreeNode LastSelectedTreeNodeUSF4;
@@ -34,17 +33,36 @@ namespace JJsUSF4ImportExport
         public Form1()
         {
             InitializeComponent();
-#if DEBUG
-            tbInputDirectory.Text = $"D:\\Program Files (x86)\\Steam\\steamapps\\common\\Super Street Fighter IV - Arcade Edition\\resource\\battle\\chara\\SKR\\";
-            tbOutputDirectory.Text = $"D:\\Program Files (x86)\\Steam\\steamapps\\common\\Super Street Fighter IV - Arcade Edition\\patch_ae2_tu3\\battle\\chara\\SKR\\";
-            tbColladaDirectory.Text = $"C:\\Users\\Durandal\\Desktop\\SF4\\Import Export Test Directory\\";
-#endif
         }
 
         private void Form1_Load(object sender, EventArgs e)
         {
+            LoadConfig();
             rblTargetEMG.Enabled = false;
-            clbEMGList.ContextMenuStrip = new ContextMenuStrip();
+
+            //Initialise context menus where applicable
+            Control[] controls = new Control[]
+            {
+                clbEMGList,
+                tvColladaFiles,
+            };
+            foreach (Control c in controls) c.ContextMenuStrip = new ContextMenuStrip();
+        }
+
+        private void LoadConfig()
+        {
+            if (File.Exists(StringLibrary.STR_IO_Config))
+            {
+                string[] lines = File.ReadAllLines(StringLibrary.STR_IO_Config);
+                tbInputDirectory.Text = Path.GetFullPath(lines[0]);
+                tbOutputDirectory.Text = Path.GetFullPath(lines[1]);
+                tbColladaDirectory.Text = Path.GetFullPath(lines[2]);
+
+                lastSelectedInputDirectory = tbInputDirectory.Text;
+                lastSelectedOutputDirectory = tbOutputDirectory.Text;
+                lastSelectedColladaDirectory = tbColladaDirectory.Text;
+
+            }
         }
 
         private void treeView_AfterSelect(object sender, TreeViewEventArgs e)
@@ -58,17 +76,23 @@ namespace JJsUSF4ImportExport
 
         private void tvTreeUpdateSelectionCollada()
         {
-            IOScene ioScene = (IOScene)FindParentNodeOfType(typeof(IOScene), tvColladaFiles.SelectedNode);
-            LastSelectedTreeNodeCollada = tvColladaFiles.SelectedNode;
+            IOPolygon ioPolygon = default;
+            TreeNode polygonParentNode = FindParentNodeOfType(typeof(IOPolygon), tvColladaFiles.SelectedNode);
+            if (polygonParentNode != null) ioPolygon = (IOPolygon)polygonParentNode.Tag;
 
-            if (ioScene != null)
+            LastSelectedTreeNodeCollada = tvColladaFiles.SelectedNode;
+            tvColladaFiles.ContextMenuStrip.Items.Clear();
+            if (ioPolygon != null)
             {
+                tvColladaFiles.ContextMenuStrip.Items.AddRange(ContextMenuItems.tvColladaMaterialContextMenuItems);
             }
         }
 
         private void tvTreeUpdateSelectionUSF4()
         {
-            EMO emo = (EMO)FindParentNodeOfType(typeof(EMO), tvUSF4Files.SelectedNode);
+            EMO emo = default;
+            TreeNode emoParentNode = FindParentNodeOfType(typeof(EMO), tvUSF4Files.SelectedNode);
+            if (emoParentNode != null) emo = (EMO)emoParentNode.Tag;
             LastSelectedTreeNodeUSF4 = tvUSF4Files.SelectedNode;
 
             if (emo != null)
@@ -101,18 +125,8 @@ namespace JJsUSF4ImportExport
             clbEMGList.ContextMenuStrip.Items.Clear();
             if (clbEMGList.Items.Count > 0) 
             {
-                clbEMGList.ContextMenuStrip.Items.Add(new ToolStripMenuItem($"Select all", null, cmEMGListSelectAll_Click));
-                clbEMGList.ContextMenuStrip.Items.Add(new ToolStripMenuItem($"Select none", null, cmEMGListSelectNone_Click));
+                clbEMGList.ContextMenuStrip.Items.AddRange(ContextMenuItems.EMGListContextMenuItems);
             }
-        }
-
-        public void cmEMGListSelectAll_Click(object sender, EventArgs e)
-        {
-            for (int i = 0; i < clbEMGList.Items.Count; i++) clbEMGList.SetItemChecked(i, true);
-        }
-        public void cmEMGListSelectNone_Click(object sender, EventArgs e)
-        {
-            for (int i = 0; i < clbEMGList.Items.Count; i++) clbEMGList.SetItemChecked(i, false);
         }
 
         public void BuildTexturePackList(string emo_name)
@@ -124,13 +138,13 @@ namespace JJsUSF4ImportExport
 
                 int maxTextures = 0;
 
-                string character_code = emo_name.Split('.')[0] + "_";
+                string character_code = emo_name.Split('.')[0];
 
                 if (!emo_name.Contains("skl.emo") && !emo_name.Contains("shd.emo"))
                 {
                     foreach (USF4File uf in master_USF4FileList)
                     {
-                        if (uf.GetType() == typeof(EMB) && !uf.Name.EndsWith(".emz") && uf.Name.StartsWith(character_code))
+                        if (uf.GetType() == typeof(EMB) && !uf.Name.EndsWith(".emz") && !uf.Name.Contains(".nml") && uf.Name.StartsWith(character_code))
                         {
                             EMB emb = (EMB)uf;
 
@@ -188,6 +202,8 @@ namespace JJsUSF4ImportExport
         void RefreshTree(TreeView tree)
         {
             var savedExpansionState = tree.Nodes.GetExpansionState();
+            string selectedNodePath = string.Empty;
+            if (tree.SelectedNode != null) selectedNodePath = tree.SelectedNode.FullPath;
             tree.BeginUpdate();
             ClearTree(tree);
 
@@ -202,8 +218,20 @@ namespace JJsUSF4ImportExport
                 tree.ContextMenuStrip = new ContextMenuStrip();
                 //tree.ContextMenuStrip.Items.Add(new ToolStripMenuItem($"Open file...", null, cmUNIVopenFileToolStripMenuItem_Click));
             }
+            if (selectedNodePath != string.Empty)
+            {
+                IEnumerable<TreeNode> treeNodes = TreeViewExtensions.Descendants(tree.Nodes);
+                foreach (TreeNode tn in treeNodes)
+                {
+                    if (selectedNodePath == tn.FullPath)
+                    {
+                        if (tree == tvUSF4Files) LastSelectedTreeNodeUSF4 = tn;
+                        else if (tree == tvColladaFiles) LastSelectedTreeNodeCollada = tn;
 
-            tree.SelectedNode = TreeViewExtensions.SelectedNodeBeforeRefresh; //Not working??
+                        //tn.BackColor = Color.LightBlue;
+                    }
+                }
+            }
             tree.EndUpdate();
         }
 
@@ -249,18 +277,23 @@ namespace JJsUSF4ImportExport
             }
         }
         
-        private static object FindParentNodeOfType(Type search_type, TreeNode n)
+        private static TreeNode FindParentNodeOfType(Type search_type, TreeNode n)
         {
-            if (n.Tag != null && n.Tag.GetType() == search_type) return n.Tag;
+            if (n.Tag != null && n.Tag.GetType() == search_type) return n;
 
-            while (n.Parent != null)
+            List<TreeNode> nodeHeirarchy = new List<TreeNode>() { n };
+
+            while (nodeHeirarchy.Last().Parent != null)
             {
-                if (n.Parent.Tag != null && n.Parent.Tag.GetType() == search_type)
-                {
-                    return n.Parent.Tag;
-                }
-                else n = n.Parent;
+                nodeHeirarchy.Add(nodeHeirarchy.Last().Parent);
             }
+
+            foreach (TreeNode node in nodeHeirarchy)
+            {
+                if (node.Tag != null && node.Tag.GetType() == search_type) return node;
+            }
+
+            //Return the original node if we couldn't find a result
             return null;
         }
 
@@ -268,7 +301,7 @@ namespace JJsUSF4ImportExport
 
         private void btnInputDirectory_Click(object sender, EventArgs e)
         {
-            using (var frm = new OpenFolderDialog())
+            using (var frm = new OpenFolderDialog() { InitialFolder = Path.GetFullPath(tbInputDirectory.Text) })
             {
                 if (frm.ShowDialog(this) == DialogResult.OK)
                 {
@@ -280,7 +313,7 @@ namespace JJsUSF4ImportExport
 
         private void btnOutputDirectory_Click(object sender, EventArgs e)
         {
-            using (var frm = new OpenFolderDialog())
+            using (var frm = new OpenFolderDialog() { InitialFolder = Path.GetFullPath(tbOutputDirectory.Text) })
             {
                 if (frm.ShowDialog(this) == DialogResult.OK)
                 {
@@ -292,7 +325,7 @@ namespace JJsUSF4ImportExport
 
         private void btnColladaDirectory_Click(object sender, EventArgs e)
         {
-            using (var frm = new OpenFolderDialog())
+            using (var frm = new OpenFolderDialog() { InitialFolder = Path.GetFullPath(tbColladaDirectory.Text) })
             {
                 if (frm.ShowDialog(this) == DialogResult.OK)
                 {
@@ -302,71 +335,145 @@ namespace JJsUSF4ImportExport
             }
         }
 
-        private void btnLoadColladaFiles_Click(object sender, EventArgs e)
+        private async Task<List<IOScene>> LoadColladaFilesAsync(IProgress<LoadColladaProgress> progress)
+        {
+            List<IOScene> loadedFiles = new List<IOScene>();
+
+            DirectoryInfo directoryInfo = new DirectoryInfo(tbColladaDirectory.Text);
+            string[] files = Directory.EnumerateFiles(tbColladaDirectory.Text, "*.dae").ToArray();
+            int totalSize = (int)directoryInfo.EnumerateFiles("*.dae").Sum(f => f.Length);
+            int fileSizeLoaded = 0;
+            LoadColladaProgress report = new LoadColladaProgress();
+
+            await Task.Run(() =>
+            {
+                foreach (string file in files)
+                {
+                    try
+                    {
+                        IOScene ioS = IONET.IOManager.LoadScene(file, new IONET.ImportSettings()
+                        {
+                            Optimize = false,
+                            Triangulate = true,
+                            FlipUVs = true,
+                        });
+                        ioS.Name = Path.GetFileName(file);
+                        loadedFiles.Add(ioS);
+
+                        fileSizeLoaded += (int)directoryInfo.EnumerateFiles(Path.GetFileName(file)).Sum(f => f.Length);
+
+                        report.ScenesLoaded = loadedFiles;
+                        report.Percent = (100 * fileSizeLoaded) / totalSize;
+                        progress.Report(report);
+                    }
+                    catch
+                    {
+                        lblStatusBarFeedback.Text = StringLibrary.STR_ERR_InvalidColladaFile + Path.GetFileName(file);
+                    }
+                }
+            });
+
+            return loadedFiles;
+        }
+
+        private async void btnLoadColladaFiles_Click(object sender, EventArgs e)
         {
             if (tbColladaDirectory.Text != string.Empty)
             {
-                master_ColladaFileList.Clear();
-
-                try
+                //Collection of controls we need to lock out during file loading
+                Control[] ColladaControls = new Control[]
                 {
-                    foreach (string file in Directory.EnumerateFiles(tbColladaDirectory.Text, "*.dae"))
-                    {
-                        try
-                        {
-                            master_ColladaFileList.Add(IONET.IOManager.LoadScene(file, new IONET.ImportSettings()
-                            {
-                                Optimize = false,
-                                Triangulate = true,
-                                FlipUVs = true,
-                            }));
-                            master_ColladaFileList.Last().Name = Path.GetFileName(file);
-                        }
-                        catch
-                        {
-                            lblStatusBarFeedback.Text = StringLibrary.STR_ERR_InvalidColladaFile + Path.GetFileName(file);
-                        }
-                    }
+                    tbColladaDirectory,
+                    btnColladaDirectory,
+                    btnLoadColladaFiles,
+                    btnClearColladaFiles,
+                    tvColladaFiles,
+                    gbImportSettings
+                };
 
-                    RefreshTree(tvColladaFiles);
+                foreach (Control control in ColladaControls)
+                {
+                    control.Enabled = false;
                 }
-                catch
+                progressBarCollada.Value = 0;
+                progressBarCollada.Visible = true;
+                Progress<LoadColladaProgress> progress = new Progress<LoadColladaProgress>();
+                progress.ProgressChanged += ReportProgress;
+
+                string[] files = Directory.EnumerateFiles(tbColladaDirectory.Text, "*.dae").ToArray();
+
+                List<IOScene> task = await LoadColladaFilesAsync(progress);
+
+                progressBarCollada.Visible = false;
+
+                foreach (Control control in ColladaControls)
                 {
-                    lblStatusBarFeedback.Text = StringLibrary.STR_ERR_InvalidColladaPath;
+                    control.Enabled = true;
                 }
             }
             else lblStatusBarFeedback.Text = StringLibrary.STR_ERR_EmptyPath;
         }
 
-        private void btnLoadGameFiles_Click(object sender, EventArgs e)
+        private void ReportProgress(object sender, LoadColladaProgress e)
+        {
+            progressBarCollada.Value = e.Percent;
+            //Populate the tree as we go - tree is disabled so user can't click anything, but can see what's loaded
+            foreach(IOScene ioScene in e.ScenesLoaded)
+            {
+                if (!master_ColladaFileList.Contains(ioScene)) master_ColladaFileList.Add(ioScene);
+            }
+            RefreshTree(tvColladaFiles);
+        }
+
+        private async Task<List<USF4File>> LoadUSF4FilesAsync(string[] files)
+        {
+            List<Task<USF4File>> tasks = new List<Task<USF4File>>();
+
+            foreach (string file in files)
+            {
+                if (file.Contains(".emo") || file.Contains(".emb") || file.Contains(".emm"))
+                    tasks.Add(Task.Run(() => USF4Utils.OpenFileStreamCheckCompression(file)));
+            }
+
+            var loadedFiles = await Task.WhenAll(tasks);
+
+            return loadedFiles.ToList();
+        }
+
+        private async void btnLoadGameFiles_Click(object sender, EventArgs e)
         {
             if (tbInputDirectory.Text != string.Empty)
             {
+                //Collection of controls we need to lock out during file loading
+                Control[] USF4Controls = new Control[]
+                {
+                    tbInputDirectory,
+                    btnInputDirectory,
+                    btnLoadInputFiles,
+                    btnClearInputFiles,
+                    gbExportSettings,
+                    gbImportSettings,
+                    tvUSF4Files,
+                };
+
+                foreach(Control control in USF4Controls)
+                {
+                    control.Enabled = false;
+                }
+
                 master_USF4FileList.Clear();
 
-                try
-                {
-                    foreach (string file in Directory.EnumerateFiles(tbInputDirectory.Text, "*.em*"))
-                    {
-                        if (file.Contains(".emo") || file.Contains(".emb") || file.Contains(".emm"))
-                        {
-                            try
-                            {
-                                master_USF4FileList.Add(USF4Utils.OpenFileStreamCheckCompression(file));
-                            }
-                            catch
-                            {
-                                Console.WriteLine($"Failed to load {Path.GetFileName(file)}.");
-                            }
-                        }
-                    }
+                string[] files = Directory.EnumerateFiles(tbInputDirectory.Text, "*.em*").ToArray();
 
-                    RefreshTree(tvUSF4Files);
-                }
-                catch
+                List<USF4File> task = await LoadUSF4FilesAsync(files);
+
+                master_USF4FileList.AddRange(task);
+                //Re-enable controls
+                foreach (Control control in USF4Controls)
                 {
-                    lblStatusBarFeedback.Text = StringLibrary.STR_ERR_InvalidPath;
+                    control.Enabled = true;
                 }
+                RefreshTree(tvUSF4Files);
             }
             else lblStatusBarFeedback.Text = StringLibrary.STR_ERR_EmptyPath;
         }
@@ -393,49 +500,72 @@ namespace JJsUSF4ImportExport
                     ios,
                     Path.Combine(tbColladaDirectory.Text, lastSelectedEMO.Name + ".dae"),
                     new IONET.ExportSettings() { FlipUVs = true });
+                    
+                    string feedback = $"Exported {lastSelectedEMO.Name} to .dae. ";
+
+                    if (embPack != null)
+                    {
+                        feedback += $"{embPack.Name} extracted to .dds.";
+                        foreach (USF4File uf in embPack.Files)
+                        {
+                            if (uf.GetType() == typeof(DDS)) uf.SaveFile(Path.Combine(tbColladaDirectory.Text, uf.Name + ".dds"));
+                        }
+                    }
+                    lblStatusBarFeedback.Text = feedback;
                 }
                 finally
                 {
                     // Restore the saved culture
                     CultureInfo.CurrentCulture = oCurrentCulture;
                 }
-                if (embPack != null)
-                {
-                    foreach (USF4File uf in embPack.Files)
-                    {
-                        if (uf.GetType() == typeof(DDS)) uf.SaveFile(Path.Combine(tbColladaDirectory.Text, uf.Name + ".dds"));
-                    }
-                }
+                
 
+                
             }
-        }
-
-
-        private void btnImportEMG_Click(object sender, EventArgs e)
-        {
-
         }
 
         private void btnImportIOMesh_Click(object sender, EventArgs e)
         {
-            if (lastSelectedEMO != null && tvColladaFiles.SelectedNode.Tag.GetType() == typeof(IOMesh))
+            IOMesh ioMesh = default;
+            TreeNode ioMeshParentNode = FindParentNodeOfType(typeof(IOMesh), tvColladaFiles.SelectedNode);
+            if (ioMeshParentNode != null) ioMesh = (IOMesh)ioMeshParentNode.Tag;
+
+            if (lastSelectedEMO != null && ioMesh != null)
             {
-
-                //TODO Check mesh/polygon size! Sakura's jersey is blowing it up if you import it as a single piece
-                //So obviously the limit is not that high!!
-                int textureIndex = cbTextureIndex.SelectedIndex;
-                int normalMapIndex = cbTextureIndex.SelectedIndex + cbTextureIndex.Items.Count;
-
-                if (rblTargetEMG.SelectedIndex < lastSelectedEMO.EMGs.Count)
+                try
                 {
-                    lastSelectedEMO.EMGs.RemoveAt(rblTargetEMG.SelectedIndex);
-                    lastSelectedEMO.EMGs.Insert(rblTargetEMG.SelectedIndex, ColladaImport.GenerateEMGfromIOMesh((IOMesh)tvColladaFiles.SelectedNode.Tag, lastSelectedEMO, textureIndex, normalMapIndex));
-                }
-                else ColladaImport.AppendIOMeshToEMO((IOMesh)tvColladaFiles.SelectedNode.Tag, lastSelectedEMO, textureIndex, normalMapIndex);
+                    //TODO Check mesh/polygon size! Sakura's jersey is blowing it up if you import it as a single piece
+                    //So obviously the limit is not that high!!
+                    int textureIndex = cbTextureIndex.SelectedIndex;
+                    int normalMapIndex = cbTextureIndex.SelectedIndex + cbTextureIndex.Items.Count;
 
-                RefreshTree(tvUSF4Files);
-                lastSelectedEMO.SaveFile(tbOutputDirectory.Text + lastSelectedEMO.Name);
-                //EMO emo = (EMO)USF4Utils.OpenFileStreamCheckCompression(tbOutputDirectory.Text + lastSelectedEMO.Name);
+                    if (rblTargetEMG.SelectedIndex < lastSelectedEMO.EMGs.Count)
+                    {
+                        lastSelectedEMO.EMGs.RemoveAt(rblTargetEMG.SelectedIndex);
+                        lastSelectedEMO.EMGs.Insert(rblTargetEMG.SelectedIndex, ColladaImport.GenerateEMGfromIOMesh(ioMesh, lastSelectedEMO, textureIndex, normalMapIndex));
+                    }
+                    else ColladaImport.AppendIOMeshToEMO(ioMesh, lastSelectedEMO, textureIndex, normalMapIndex);
+
+                    RefreshTree(tvUSF4Files);
+                    clbEMGList.Items.Clear();
+                    rblTargetEMG.Items.Clear();
+                    foreach (EMG emg in lastSelectedEMO.EMGs)
+                    {
+                        clbEMGList.Items.Add($"[{rblTargetEMG.Items.Count:D2}] {emg.Name}", CheckState.Checked);
+                        rblTargetEMG.Items.Add($"[{rblTargetEMG.Items.Count:D2}] {emg.Name}");
+                    }
+                    rblTargetEMG.Items.Add("As new EMG");
+                    rblTargetEMG.SelectedIndex = rblTargetEMG.Items.Count - 1;
+
+                    if (cbSFxT.Checked) lastSelectedEMO.SaveAsSFxTEMO(Path.Combine(tbOutputDirectory.Text, lastSelectedEMO.Name));
+                    else lastSelectedEMO.SaveFile(Path.Combine(tbOutputDirectory.Text, lastSelectedEMO.Name));
+                }
+                catch (Exception exception)
+                {
+                    string[] message = exception.Message.Split('#');
+                    lblStatusBarFeedback.Text = message[0] + $" ({message[1]})";
+                }
+                
             }
         }
 
@@ -448,6 +578,7 @@ namespace JJsUSF4ImportExport
             clbTexturePacks.Items.Clear();
             clbTexturePacks.Text = string.Empty;
             rblTargetEMG.Items.Clear();
+            SetEMGListContextMenu();
             RefreshTree(tvUSF4Files);
         }
 
@@ -456,6 +587,36 @@ namespace JJsUSF4ImportExport
             master_ColladaFileList.Clear();
             LastSelectedTreeNodeCollada = null;
             RefreshTree(tvColladaFiles);
+        }
+
+        private void tvTree_NodeMouseClick(object sender, TreeNodeMouseClickEventArgs e)
+        {
+            if (sender == tvUSF4Files) tvUSF4Files.SelectedNode = tvUSF4Files.GetNodeAt(e.Location);
+            else if (sender == tvColladaFiles) tvColladaFiles.SelectedNode = tvColladaFiles.GetNodeAt(e.Location);
+        }
+
+        private void Form1_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            string data = string.Empty;
+
+            data += lastSelectedInputDirectory + Environment.NewLine;
+            data += lastSelectedOutputDirectory + Environment.NewLine;
+            data += lastSelectedColladaDirectory + Environment.NewLine;
+
+            File.WriteAllText(StringLibrary.STR_IO_Config, data);
+        }
+
+        private void tvColladaFiles_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            TreeView tv = sender as TreeView;
+            if (e.KeyChar == '\r')
+            {
+                e.Handled = true;
+                if (tv.SelectedNode.Tag != null)
+                {
+                    ContextMenuFunctions.ChangeLastSelectedNodeName(tv);
+                }
+            }
         }
     }
 }
