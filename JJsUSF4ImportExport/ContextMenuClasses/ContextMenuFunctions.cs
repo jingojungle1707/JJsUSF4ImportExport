@@ -56,7 +56,7 @@ namespace JJsUSF4ImportExport
                         USF4File uf = (USF4File)n.Tag;
                         uf.SaveFile(Path.Join(Form1.lastSelectedOutputDirectory, uf.Name));
 
-                        TimedFeedbackLabel label = new TimedFeedbackLabel($"Quicksaved!", 2000, tv, n);
+                        _ = new TimedFeedbackLabel($"Quicksaved!", 2000, tv, n);
                     }
                 }
             }
@@ -82,10 +82,10 @@ namespace JJsUSF4ImportExport
                             if (frm.ShowDialog() == DialogResult.OK)
                             {
                                 uf.SaveFile(frm.FileName);
+                                _ = new TimedFeedbackLabel($"Saved!", 2000, tv, n);
                             }
                         }
 
-                        TimedFeedbackLabel label = new TimedFeedbackLabel($"Saved!", 2000, tv, n);
                     }
                 }
             }

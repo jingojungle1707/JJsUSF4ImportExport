@@ -431,6 +431,8 @@ namespace JJsUSF4ImportExport
 
                 string[] files = Directory.EnumerateFiles(tbColladaDirectory.Text, "*.dae").ToArray();
 
+                if (files.Count() == 0) lblStatusBarFeedback.Text = StringLibrary.STR_ERR_NoFilesInColladaDirectory;
+
                 List<IOScene> task = await LoadColladaFilesAsync(progress);
 
                 progressBarCollada.Visible = false;
@@ -497,6 +499,9 @@ namespace JJsUSF4ImportExport
                 List<USF4File> task = await LoadUSF4FilesAsync(files);
 
                 master_USF4FileList.AddRange(task);
+
+                if (task.Count == 0) lblStatusBarFeedback.Text = StringLibrary.STR_ERR_NoFilesInInputDirectory;
+
                 //Re-enable controls
                 foreach (Control control in USF4Controls)
                 {
@@ -600,6 +605,7 @@ namespace JJsUSF4ImportExport
                 }
                 catch (Exception exception)
                 {
+                    //Report which bone failed to match
                     string[] message = exception.Message.Split('#');
                     lblStatusBarFeedback.Text = message[0] + $" ({message[1]})";
                 }
