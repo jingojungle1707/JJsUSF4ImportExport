@@ -24,9 +24,9 @@ namespace JJsUSF4ImportExport
         public List<USF4File> master_USF4FileList = new List<USF4File>();
         public List<IOScene> master_ColladaFileList = new List<IOScene>();
 
-        string lastSelectedInputDirectory = string.Empty;
-        string lastSelectedOutputDirectory = string.Empty;
-        string lastSelectedColladaDirectory = string.Empty;
+        public static string lastSelectedInputDirectory = string.Empty;
+        public static string lastSelectedOutputDirectory = string.Empty;
+        public static string lastSelectedColladaDirectory = string.Empty;
 
         EMO lastSelectedEMO;
 
@@ -45,6 +45,7 @@ namespace JJsUSF4ImportExport
             {
                 clbEMGList,
                 tvColladaFiles,
+                tvUSF4Files,
             };
             foreach (Control c in controls) c.ContextMenuStrip = new ContextMenuStrip();
         }
@@ -61,7 +62,17 @@ namespace JJsUSF4ImportExport
                 lastSelectedInputDirectory = tbInputDirectory.Text;
                 lastSelectedOutputDirectory = tbOutputDirectory.Text;
                 lastSelectedColladaDirectory = tbColladaDirectory.Text;
-
+                
+            }
+            else 
+            { 
+                string baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
+                tbInputDirectory.Text = baseDirectory;
+                tbOutputDirectory.Text = baseDirectory;
+                tbColladaDirectory.Text = baseDirectory;
+                lastSelectedInputDirectory = baseDirectory;
+                lastSelectedOutputDirectory = baseDirectory;
+                lastSelectedColladaDirectory = baseDirectory;
             }
         }
 
@@ -90,6 +101,8 @@ namespace JJsUSF4ImportExport
 
         private void tvTreeUpdateSelectionUSF4()
         {
+            SetUSF4FileContextMenu(tvUSF4Files.SelectedNode.Tag);
+
             EMO emo = default;
             TreeNode emoParentNode = FindParentNodeOfType(typeof(EMO), tvUSF4Files.SelectedNode);
             if (emoParentNode != null) emo = (EMO)emoParentNode.Tag;
@@ -97,6 +110,7 @@ namespace JJsUSF4ImportExport
 
             if (emo != null)
             {
+                //If nothing's changed, don't rebuild lists
                 if (emo == lastSelectedEMO) return;
 
                 clbEMGList.Items.Clear();
@@ -116,10 +130,16 @@ namespace JJsUSF4ImportExport
                     rblTargetEMG.SelectedIndex = rblTargetEMG.Items.Count - 1;
                 }
                 else rblTargetEMG.Enabled = false;
-
             }
         }
 
+        private void SetUSF4FileContextMenu(object tag)
+        {
+            tvUSF4Files.ContextMenuStrip.Items.Clear();
+            //If there's no node tag or it's not a USF4File, return
+            if (tag == null || !tag.GetType().IsSubclassOf(typeof(USF4File))) return;
+            tvUSF4Files.ContextMenuStrip.Items.AddRange(ContextMenuItems.tvUSF4FileContextMenuItems);
+        }
         private void SetEMGListContextMenu()
         {
             clbEMGList.ContextMenuStrip.Items.Clear();
@@ -135,6 +155,7 @@ namespace JJsUSF4ImportExport
             {
                 clbTexturePacks.Items.Clear();
                 cbTextureIndex.Items.Clear();
+                cbNormalMapIndex.Items.Clear();
 
                 int maxTextures = 0;
 
@@ -158,16 +179,23 @@ namespace JJsUSF4ImportExport
                 }
                 if (clbTexturePacks.Items.Count > 0)
                 {
-                    while (cbTextureIndex.Items.Count < maxTextures) cbTextureIndex.Items.Add(cbTextureIndex.Items.Count);
+                    while (cbTextureIndex.Items.Count < maxTextures)
+                    {
+                        cbTextureIndex.Items.Add(cbTextureIndex.Items.Count);
+                        cbNormalMapIndex.Items.Add(cbNormalMapIndex.Items.Count + maxTextures);
+                    }
                     cbExportTextures.Enabled = true;
                     cbTextureIndex.Enabled = true;
+                    cbNormalMapIndex.Enabled = true;
                     clbTexturePacks.SelectedIndex = 0;
                     cbTextureIndex.SelectedIndex = 0;
+                    cbNormalMapIndex.SelectedIndex = 0;
                 }
                 else
                 {
                     cbExportTextures.Enabled = false;
                     cbTextureIndex.Enabled = false;
+                    cbNormalMapIndex.Enabled = false;
                 }
             }
         }
@@ -270,7 +298,7 @@ namespace JJsUSF4ImportExport
         {
             foreach (IOScene ioS in master_ColladaFileList)
             {
-                foreach (IONET.Core.Model.IOModel ioM in ioS.Models)
+                foreach (IOModel ioM in ioS.Models)
                 {
                     tvColladaFiles.Nodes.Add(ioM.GenerateioModelTreeNode(ioS.Name));
                 }
@@ -301,7 +329,8 @@ namespace JJsUSF4ImportExport
 
         private void btnInputDirectory_Click(object sender, EventArgs e)
         {
-            using (var frm = new OpenFolderDialog() { InitialFolder = Path.GetFullPath(tbInputDirectory.Text) })
+
+            using (var frm = new OpenFolderDialog() { InitialFolder = Directory.Exists(tbInputDirectory.Text) ? tbInputDirectory.Text : default })
             {
                 if (frm.ShowDialog(this) == DialogResult.OK)
                 {
@@ -313,7 +342,7 @@ namespace JJsUSF4ImportExport
 
         private void btnOutputDirectory_Click(object sender, EventArgs e)
         {
-            using (var frm = new OpenFolderDialog() { InitialFolder = Path.GetFullPath(tbOutputDirectory.Text) })
+            using (var frm = new OpenFolderDialog() { InitialFolder = Directory.Exists(tbInputDirectory.Text) ? tbInputDirectory.Text : default })
             {
                 if (frm.ShowDialog(this) == DialogResult.OK)
                 {
@@ -325,7 +354,7 @@ namespace JJsUSF4ImportExport
 
         private void btnColladaDirectory_Click(object sender, EventArgs e)
         {
-            using (var frm = new OpenFolderDialog() { InitialFolder = Path.GetFullPath(tbColladaDirectory.Text) })
+            using (var frm = new OpenFolderDialog() { InitialFolder = Directory.Exists(tbColladaDirectory.Text) ? tbColladaDirectory.Text : default })
             {
                 if (frm.ShowDialog(this) == DialogResult.OK)
                 {
@@ -518,9 +547,6 @@ namespace JJsUSF4ImportExport
                     // Restore the saved culture
                     CultureInfo.CurrentCulture = oCurrentCulture;
                 }
-                
-
-                
             }
         }
 
@@ -537,16 +563,31 @@ namespace JJsUSF4ImportExport
                     //TODO Check mesh/polygon size! Sakura's jersey is blowing it up if you import it as a single piece
                     //So obviously the limit is not that high!!
                     int textureIndex = cbTextureIndex.SelectedIndex;
-                    int normalMapIndex = cbTextureIndex.SelectedIndex + cbTextureIndex.Items.Count;
+                    int normalMapIndex = cbNormalMapIndex.SelectedIndex;
+
+                    EMG new_emg = ColladaImport.GenerateEMGfromIOMesh(ioMesh, lastSelectedEMO, textureIndex, normalMapIndex);
 
                     if (rblTargetEMG.SelectedIndex < lastSelectedEMO.EMGs.Count)
                     {
                         lastSelectedEMO.EMGs.RemoveAt(rblTargetEMG.SelectedIndex);
-                        lastSelectedEMO.EMGs.Insert(rblTargetEMG.SelectedIndex, ColladaImport.GenerateEMGfromIOMesh(ioMesh, lastSelectedEMO, textureIndex, normalMapIndex));
+                        lastSelectedEMO.EMGs.Insert(rblTargetEMG.SelectedIndex, new_emg);
                     }
-                    else ColladaImport.AppendIOMeshToEMO(ioMesh, lastSelectedEMO, textureIndex, normalMapIndex);
+                    else lastSelectedEMO.EMGs.Add(new_emg);
 
                     RefreshTree(tvUSF4Files);
+                    foreach (TreeNode n in TreeViewExtensions.Descendants(tvUSF4Files.Nodes))
+                    {
+                        if (n.Tag != null && n.Tag == lastSelectedEMO)
+                        {
+                            TreeNode emgNode = n.Nodes[rblTargetEMG.SelectedIndex];
+                            //Scroll up to the EMO, then down to the EMG node to push the window to the right position
+                            n.EnsureVisible();
+                            emgNode.EnsureVisible();
+                            TimedFeedbackLabel label = new TimedFeedbackLabel("EMG created!", 2000, tvUSF4Files, emgNode);
+                            break;
+                        }
+                    }
+
                     clbEMGList.Items.Clear();
                     rblTargetEMG.Items.Clear();
                     foreach (EMG emg in lastSelectedEMO.EMGs)
@@ -556,16 +597,12 @@ namespace JJsUSF4ImportExport
                     }
                     rblTargetEMG.Items.Add("As new EMG");
                     rblTargetEMG.SelectedIndex = rblTargetEMG.Items.Count - 1;
-
-                    if (cbSFxT.Checked) lastSelectedEMO.SaveAsSFxTEMO(Path.Combine(tbOutputDirectory.Text, lastSelectedEMO.Name));
-                    else lastSelectedEMO.SaveFile(Path.Combine(tbOutputDirectory.Text, lastSelectedEMO.Name));
                 }
                 catch (Exception exception)
                 {
                     string[] message = exception.Message.Split('#');
                     lblStatusBarFeedback.Text = message[0] + $" ({message[1]})";
                 }
-                
             }
         }
 
@@ -608,6 +645,16 @@ namespace JJsUSF4ImportExport
 
         private void tvColladaFiles_KeyPress(object sender, KeyPressEventArgs e)
         {
+            TreeFileRPress(sender, e);
+        }
+
+        private void tvUSF4Files_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            TreeFileRPress(sender, e);
+        }
+
+        private void TreeFileRPress(object sender, KeyPressEventArgs e)
+        {
             TreeView tv = sender as TreeView;
             if (e.KeyChar == '\r')
             {
@@ -615,6 +662,22 @@ namespace JJsUSF4ImportExport
                 if (tv.SelectedNode.Tag != null)
                 {
                     ContextMenuFunctions.ChangeLastSelectedNodeName(tv);
+                }
+            }
+        }
+
+        private void btnLoadSingleFile_Click(object sender, EventArgs e)
+        {
+            using (var frm = new OpenFileDialog() {
+                InitialDirectory = Directory.Exists(tbInputDirectory.Text) ? tbInputDirectory.Text : default,
+                Filter = "*.emo; *.emm; *.emb|*.emo;*.emm;*.emb"
+            })
+            {
+                if (frm.ShowDialog(this) == DialogResult.OK)
+                {
+                    USF4File uf = USF4Utils.OpenFileStreamCheckCompression(frm.FileName);
+                    master_USF4FileList.Add(USF4Utils.OpenFileStreamCheckCompression(frm.FileName));
+                    RefreshTree(tvUSF4Files);
                 }
             }
         }

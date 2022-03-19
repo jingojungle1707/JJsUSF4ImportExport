@@ -9,12 +9,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\IONET\IONET\IONET.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Reference Include="JJsUSF4Library">
-      <HintPath>..\..\JJsUSF4LibraryProject\JJsUSF4Library\bin\Release\net5.0\JJsUSF4Library.dll</HintPath>
-    </Reference>
+    <ProjectReference Include="..\JJsUSF4Library\JJsUSF4Library\JJsUSF4Library.csproj" />
   </ItemGroup>
 
 </Project>

@@ -20,6 +20,16 @@ namespace JJsUSF4ImportExport
         };
         #endregion
 
+        #region TreeViewUSF4
+
+        #endregion
+        private static string tvUSF4File_QuicksaveFile_Text = "Quicksave";
+        private static string tvUSF4File_SaveFile_Text = "Save as...";
+        public static ToolStripMenuItem[] tvUSF4FileContextMenuItems = new ToolStripMenuItem[]
+        {
+            new ToolStripMenuItem(tvUSF4File_QuicksaveFile_Text, null, ContextMenuFunctions.cmTvUSF4QuicksaveFile_Click),
+            new ToolStripMenuItem(tvUSF4File_SaveFile_Text, null, ContextMenuFunctions.cmTvUSF4SaveFileAs_Click),
+        };
         #region TreeViewCollada
         private static string tvColladaMaterial_ChangeMaterial_Text = "Change material name";
         public static ToolStripMenuItem[] tvColladaMaterialContextMenuItems = new ToolStripMenuItem[]

@@ -1,3 +1,6 @@
 [submodule "IONET"]
 	path = IONET
 	url = https://github.com/Ploaj/IONET.git
+[submodule "JJsUSF4Library"]
+	path = JJsUSF4Library
+	url = https://github.com/jingojungle1707/JJsUSF4Library

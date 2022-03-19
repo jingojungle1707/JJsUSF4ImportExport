@@ -40,5 +40,19 @@ namespace JJsUSF4ImportExport
             }
         }
 
+        /// <summary>
+        /// Returns a parent heirarchy, including the current node
+        /// </summary>
+        /// <param name="n"></param>
+        /// <returns></returns>
+        public static List<TreeNode> NodeChain(this TreeNode n)
+        {
+            List<TreeNode> nodes = new List<TreeNode>() { n };
+            while (nodes.Last().Parent != null)
+            {
+                nodes.Add(nodes.Last().Parent);
+            }
+            return nodes;
+        }
     }
 }
