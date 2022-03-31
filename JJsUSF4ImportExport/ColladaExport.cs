@@ -159,27 +159,36 @@ namespace JJsUSF4ImportExport
             iOSkeleton.RootBones.Add(new IONET.Core.Skeleton.IOBone()
             {
                 Name = emoSkeleton.Nodes[0].Name,
-                LocalTransform = emoSkeleton.Nodes[0].NodeMatrix,
+                LocalTransform = emoSkeleton.Nodes[0].LocalMatrix,
             });
-            
-            foreach (Node n in emoSkeleton.Nodes)
+            List < Node> descendants = new List<Node>() { emoSkeleton.Nodes[0] };
+
+            while (descendants.Count > 0)
             {
-                //Skip root node because we already dealt with it
-                if (n.Name == emoSkeleton.Nodes[0].Name) continue;
 
-                //Fetch the parent node
-                IONET.Core.Skeleton.IOBone ioBone = iOSkeleton.GetBoneByName(emoSkeleton.Nodes[n.Parent].Name);
-
-                //Add to parent bone
+                descendants.AddRange(GetDescendants(descendants[0], emoSkeleton));
+                IONET.Core.Skeleton.IOBone ioBone = iOSkeleton.GetBoneByName(descendants[0].Parent);
                 ioBone.AddChild(new IONET.Core.Skeleton.IOBone()
                 {
-                    Name = n.Name,
-                    //WorldTransform = sbp
-                    LocalTransform = n.NodeMatrix,
+                    Name = descendants[0].Name,
+                    LocalTransform = descendants[0].LocalMatrix,
                 });
+                descendants.RemoveAt(0);
             }
 
             return iOSkeleton;
+        }
+
+        private static List<Node> GetDescendants(Node n, Skeleton emoSkeleton)
+        {
+            List<Node> descendants = new List<Node>();
+
+            if (n.Child1 != string.Empty) descendants.Add(emoSkeleton.Nodes[emoSkeleton.NodeNames.IndexOf(n.Child1)]);
+            if (n.Sibling != string.Empty) descendants.Add(emoSkeleton.Nodes[emoSkeleton.NodeNames.IndexOf(n.Sibling)]);
+            if (n.Child3 != string.Empty) descendants.Add(emoSkeleton.Nodes[emoSkeleton.NodeNames.IndexOf(n.Child3)]);
+            if (n.Child4 != string.Empty) descendants.Add(emoSkeleton.Nodes[emoSkeleton.NodeNames.IndexOf(n.Child4)]);
+
+            return descendants;
         }
 
         public static List<IOBoneWeight> BoneIDWeightPairsToIOEnvelope(List<Vertex.BoneIDWeightPair> boneIDWeightPairs)

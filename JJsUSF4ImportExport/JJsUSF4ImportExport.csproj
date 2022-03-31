@@ -5,11 +5,34 @@
     <TargetFramework>net5.0-windows</TargetFramework>
     <RootNamespace>JJsUSF4ImportExport</RootNamespace>
     <UseWindowsForms>true</UseWindowsForms>
+    <Authors>jingojungle</Authors>
+    <Product />
+    <PackageProjectUrl>https://github.com/jingojungle1707/JJsUSF4ImportExport</PackageProjectUrl>
+    <PackageIcon></PackageIcon>
+    <PackageIconUrl />
+    <RepositoryUrl>https://github.com/jingojungle1707/JJsUSF4ImportExport</RepositoryUrl>
+    <AssemblyName>JJsUSF4ImportExport</AssemblyName>
+    <Version>1.0.1</Version>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\IONET\IONET\IONET.csproj" />
     <ProjectReference Include="..\JJsUSF4Library\JJsUSF4Library\JJsUSF4Library.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Properties\Settings.Designer.cs">
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
   </ItemGroup>
 
 </Project>

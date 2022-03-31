@@ -38,6 +38,10 @@ namespace JJsUSF4ImportExport
         private void Form1_Load(object sender, EventArgs e)
         {
             LoadConfig();
+
+            var version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
+            this.Text = string.Format("JJs USF4 Import/Export v{0}", version);
+
             rblTargetEMG.Enabled = false;
 
             //Initialise context menus where applicable
@@ -542,7 +546,7 @@ namespace JJsUSF4ImportExport
                         feedback += $"{embPack.Name} extracted to .dds.";
                         foreach (USF4File uf in embPack.Files)
                         {
-                            if (uf.GetType() == typeof(DDS)) uf.SaveFile(Path.Combine(tbColladaDirectory.Text, uf.Name + ".dds"));
+                            if (uf.GetType() == typeof(DDS)) uf.SaveToPath(Path.Combine(tbColladaDirectory.Text, uf.Name + ".dds"));
                         }
                     }
                     lblStatusBarFeedback.Text = feedback;
